@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Churn Prediction | AI Analyzer</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Modern AI/ML Dark Theme Color Palette */
+            --bg-dark: #0D1117;
+            --bg-light: #161B22;
+            --border-color: rgba(139, 148, 158, 0.3);
+            --primary-accent: #58A6FF;
+            --secondary-accent: #A371F7;
+            --text-primary: #C9D1D9;
+            --text-secondary: #8B949E;
+            --result-churn-bg: rgba(248, 81, 73, 0.1);
+            --result-churn-border: #F85149;
+            --result-churn-text: #FFA0A0;
+            --result-no-churn-bg: rgba(63, 185, 80, 0.1);
+            --result-no-churn-border: #3FB950;
+            --result-no-churn-text: #85E89D;
+        }
+
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem; /* Added padding for better spacing on all sides */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            /* Animated Gradient Background */
+            background: linear-gradient(-45deg, #0D1117, #1F1F2E, #0D1117, #162232);
+            background-size: 400% 400%;
+            animation: gradient-animation 15s ease infinite;
+        }
+
+        .form-wrapper {
+            /* Glassmorphism Effect */
+            background: rgba(22, 27, 34, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+            /* UPDATED: Increased max-width for laptop screens */
+            max-width: 1280px;
+            width: 100%;
+        }
+
+        h1 {
+            font-weight: 700;
+            margin-bottom: 2rem;
+            /* Gradient Text Effect */
+            background: -webkit-linear-gradient(45deg, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 10px 15px; /* Slightly reduced padding */
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: none;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-dark);
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.2);
+        }
+
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238B949E' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        }
+
+        .btn-predict {
+            background-image: linear-gradient(45deg, var(--primary-accent) 0%, var(--secondary-accent) 100%);
+            margin-top: 20px;
+            padding: 12px 45px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            color: white;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(88, 166, 255, 0.2);
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(163, 113, 247, 0.3);
+        }
+
+        .result-box {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.15rem;
+            border: 1px solid;
+        }
+
+        .result-box h3 {
+            margin: 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .result-box span {
+            font-weight: 700;
+        }
+
+        .result-box p {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .result-churn {
+            background-color: var(--result-churn-bg);
+            border-color: var(--result-churn-border);
+            color: var(--result-churn-text);
+        }
+
+        .result-no-churn {
+            background-color: var(--result-no-churn-bg);
+            border-color: var(--result-no-churn-border);
+            color: var(--result-no-churn-text);
+        }
+
+        .result-churn h3::before { content: '✖'; font-size: 1.2rem; color: var(--result-churn-border); }
+        .result-no-churn h3::before { content: '✔'; font-size: 1.2rem; color: var(--result-no-churn-border); }
+
+        .developer-credit {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .developer-credit .name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid"> <div class="form-wrapper">
+            <h1 class="text-center">Customer Churn Prediction</h1>
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-2"> <label for="gender" class="form-label">Gender</label>
+                            <select id="gender" name="gender" class="form-select">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="SeniorCitizen" class="form-label">Senior Citizen</label>
+                            <select id="SeniorCitizen" name="SeniorCitizen" class="form-select">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="Partner" class="form-label">Partner</label>
+                            <select id="Partner" name="Partner" class="form-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="Dependents" class="form-label">Dependents</label>
+                            <select id="Dependents" name="Dependents" class="form-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                         <div class="mb-2">
+                            <label for="tenure" class="form-label">Tenure (Months)</label>
+                            <input type="number" id="tenure" name="tenure" class="form-control" placeholder="e.g., 12" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <label for="PhoneService" class="form-label">Phone Service</label>
+                            <select id="PhoneService" name="PhoneService" class="form-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="MultipleLines" class="form-label">Multiple Lines</label>
+                            <select id="MultipleLines" name="MultipleLines" class="form-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="No phone service">No phone service</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="InternetService" class="form-label">Internet Service</label>
+                            <select id="InternetService" name="InternetService" class="form-select">
+                                <option value="DSL">DSL</option>
+                                <option value="Fiber optic">Fiber optic</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="OnlineSecurity" class="form-label">Online Security</label>
+                            <select id="OnlineSecurity" name="OnlineSecurity" class="form-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="No internet service">No internet service</option>
+                            </select>
+                        </div>
+                         <div class="mb-2">
+                            <label for="OnlineBackup" class="form-label">Online Backup</label>
+                            <select id="OnlineBackup" name="OnlineBackup" class="form-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="No internet service">No internet service</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <label for="DeviceProtection" class="form-label">Device Protection</label>
+                            <select id="DeviceProtection" name="DeviceProtection" class="form-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="No internet service">No internet service</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="TechSupport" class="form-label">Tech Support</label>
+                            <select id="TechSupport" name="TechSupport" class="form-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="No internet service">No internet service</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="StreamingTV" class="form-label">Streaming TV</label>
+                            <select id="StreamingTV" name="StreamingTV" class="form-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="No internet service">No internet service</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="StreamingMovies" class="form-label">Streaming Movies</label>
+                            <select id="StreamingMovies" name="StreamingMovies" class="form-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="No internet service">No internet service</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="Contract" class="form-label">Contract</label>
+                            <select id="Contract" name="Contract" class="form-select">
+                                <option value="Month-to-month">Month-to-month</option>
+                                <option value="One year">One year</option>
+                                <option value="Two year">Two year</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <label for="PaperlessBilling" class="form-label">Paperless Billing</label>
+                            <select id="PaperlessBilling" name="PaperlessBilling" class="form-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="PaymentMethod" class="form-label">Payment Method</label>
+                            <select id="PaymentMethod" name="PaymentMethod" class="form-select">
+                                <option value="Electronic check">Electronic check</option>
+                                <option value="Mailed check">Mailed check</option>
+                                <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                                <option value="Credit card (automatic)">Credit card (automatic)</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="MonthlyCharges" class="form-label">Monthly Charges</label>
+                            <input type="number" step="0.01" id="MonthlyCharges" name="MonthlyCharges" class="form-control" placeholder="e.g., 75.50" required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="TotalCharges" class="form-label">Total Charges</label>
+                            <input type="number" step="0.01" id="TotalCharges" name="TotalCharges" class="form-control" placeholder="e.g., 550.25" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-predict w-50">Predict Churn</button>
+                </div>
+            </form>
+
+            {% if prediction is not none %}
+            <div class="result-box {% if prediction == 'Churn' %}result-churn{% else %}result-no-churn{% endif %}">
+                <h3>Prediction: <span>{{ prediction }}</span></h3>
+                <p class="mb-0 mt-2">Probability of Churn: {{ (probability * 100) | round(2) }}%</p>
+            </div>
+            {% endif %}
+
+            <p class="developer-credit">Developed by - <span class="name">Ritam Samanta</span></p>
+
+        </div>
+    </div>
+</body>
+</html>
